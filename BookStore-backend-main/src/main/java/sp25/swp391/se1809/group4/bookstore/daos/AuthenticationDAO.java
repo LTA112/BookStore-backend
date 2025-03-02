@@ -76,7 +76,7 @@ public class AuthenticationDAO {
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
         JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
                 .subject(accountDTO.getUsername())
-                .issuer("capybook")
+                .issuer("BookStore")
                 .claim("scope", buildScope(accountDTO))
                 .claim("status",accountDTO.getAccStatus())
                 .claim("email",accountDTO.getEmail())

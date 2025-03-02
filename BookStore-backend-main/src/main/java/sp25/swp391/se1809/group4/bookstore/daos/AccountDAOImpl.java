@@ -272,17 +272,17 @@ public class AccountDAOImpl implements AccountDAO {
             entityManager.merge(accountDTO);
             if (accountDTO.getEmail().equals(request.getEmail())) {
                 String toEmail = request.getEmail();
-                String subject = "VERIFY ACCOUNT OF CAPYBOOK STORE";
-                String body = "<h1 style=\"text-align: center; background-color: skyblue; color: white;\">CAPYBOOK STORE</h1>\n" +
+                String subject = "VERIFY ACCOUNT OF BOOK STORE";
+                String body = "<h1 style=\"text-align: center; background-color: skyblue; color: white;\">BOOK STORE</h1>\n" +
                         "    <p>Dear " + accountDTO.getFirstName() + " " + accountDTO.getLastName() + ",</p>\n" +
                         "    <p>The code is used to verify account is <strong>" + accountDTO.getCode() + "</strong></p>\n" +
                         "    <p>Please don't give this code for anyone. Thanks for using my service! Hoping you have a special experience at\n" +
-                        "        Capybook! For more information please contact <strong>capybookteam@gmail.com</strong></p>\n" +
+                        "        BookStore! For more information please contact <strong>ty24102004@gmail.com</strong></p>\n" +
                         "    <p>Best regard,</p>\n" +
-                        "    <h3>Capybook Team</h3>\n" +
+                        "    <h3>BookStore</h3>\n" +
                         "    <div style=\"background-color: darkblue; text-align: center;color: white;line-height: 20px;\">\n" +
                         "        <em>© Copyright " + Year.now().getValue() + "</em><br>\n" +
-                        "        <em>Capybook Team</em><br>\n" +
+                        "        <em>BookStore</em><br>\n" +
                         "        <em>All right reserved!</em>\n" +
                         "    </div>";
 

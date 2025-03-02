@@ -4,7 +4,7 @@ import sp25.swp391.se1809.group4.bookstore.daos.AccountDAO;
 import sp25.swp391.se1809.group4.bookstore.daos.PromotionDAO;
 import sp25.swp391.se1809.group4.bookstore.daos.PromotionLogDAO;
 import sp25.swp391.se1809.group4.bookstore.daos.StaffDAO;
-import fa24.swp391.se1802.group3.capybook.models.*;
+import sp25.swp391.se1809.group4.bookstore.models.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

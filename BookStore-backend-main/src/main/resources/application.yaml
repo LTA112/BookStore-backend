@@ -2,7 +2,7 @@ spring:
   datasource:
     url: "jdbc:sqlserver://localhost:1433;databaseName=BookStore;encrypt=true;trustServerCertificate=true;"
     username: sa
-    password: 123456123456
+    password: 123456
   application:
     name: BookStore
   main:
@@ -19,14 +19,14 @@ spring:
   security:
     user:
       name: sa
-      password: sa
+      password: 123456
   jpa:
     open-in-view: false
   mail:
     host: smtp.gmail.com
     port: 587
-    username: bookstore@gmail.com
-    password: mymgqgowzesnxgrc
+    username: bookstoregrp4@gmail.com
+    password: gedz ojhy zigr druv
     properties:
       mail:
         smtp:
