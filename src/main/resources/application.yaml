@@ -1,0 +1,52 @@
+spring:
+  datasource:
+    url: "jdbc:sqlserver://localhost:1433;databaseName=BookStore;encrypt=true;trustServerCertificate=true;"
+    username: sa
+    password: An0354768872
+  application:
+    name: BookStore
+  main:
+    banner-mode: off
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+  mvc:
+    static-path-pattern: /uploads/**
+  web:
+    resources:
+      static-locations: file:./uploads/
+  security:
+    user:
+      name: sa
+      password: 123456
+  jpa:
+    open-in-view: false
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: bookstoregrp4@gmail.com
+    password: gedz ojhy zigr druv
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+server:
+  port: 6789
+
+logging:
+  level:
+    org:
+      springframework:
+        security: DEBUG
+#    root: warn
+
+jwt:
+  signerKey: "lIAz1lQmNF5SFv8vfKBByIeXSlgBFkptJHv+pjfckpowfs+ZXG35CDk9WHRfkiZF"
+  valid-duration: 90000 # in SECONDS
+  refreshable-duration: 14 # in days
+
+
