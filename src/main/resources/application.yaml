@@ -1,8 +1,8 @@
 spring:
   datasource:
     url: "jdbc:sqlserver://localhost:1433;databaseName=BookStore;encrypt=true;trustServerCertificate=true;"
-    username: sa
-    password: 123456
+    username: Admin
+    password: 112003
   application:
     name: BookStore
   main:

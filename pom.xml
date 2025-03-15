@@ -6,7 +6,7 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>3.3.4</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <relativePath/>
     </parent>
     <groupId>sp25.swp391.se1809.group4</groupId>
     <artifactId>BookStore</artifactId>
@@ -85,6 +85,4 @@
         </plugins>
 
     </build>
-
-
 </project>

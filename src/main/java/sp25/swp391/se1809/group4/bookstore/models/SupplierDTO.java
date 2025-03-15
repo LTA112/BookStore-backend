@@ -42,10 +42,5 @@ public class SupplierDTO implements Serializable {
     @Column(name = "supstatus")
     private Integer supStatus;
 
-    @OneToMany(mappedBy = "supID", fetch = FetchType.LAZY)
-    @JsonManagedReference
-    @JsonIgnore
-    private List<ImportStockDTO> importStockList;
-
 
 }
