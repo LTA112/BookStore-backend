@@ -78,7 +78,6 @@ public class BookDAOImpl implements BookDAO{
         System.out.println("Category ID: " + categoryID);
         CategoryDAOlmpl dao = new CategoryDAOlmpl(entityManager);
         CategoryDTO category = dao.find(categoryID);
-        // Truy vấn danh sách sách có trong database
         List<BookDTO> result =  entityManager.createQuery("SELECT b FROM BookDTO b JOIN FETCH b.bookCategories c WHERE c.catId = :category", BookDTO.class)
                 .setParameter("category", category)
                 .getResultList();
