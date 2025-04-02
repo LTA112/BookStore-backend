@@ -64,8 +64,10 @@ public class BookDAOImpl implements BookDAO{
     @Override
     public List<BookDTO> sortBooks(String sortBy, String sortOrder) {
         String queryString = "FROM BookDTO b WHERE b.bookStatus = 1"; // Chỉ lấy sách hợp lệ
+        // Kiểm tra nếu người dùng yêu cầu sắp xếp theo giá
         if ("price".equalsIgnoreCase(sortBy)) {
             queryString += " ORDER BY b.bookPrice " + ("desc".equalsIgnoreCase(sortOrder) ? "DESC" : "ASC");
+            // Kiểm tra nếu người dùng yêu cầu sắp xếp theo tiêu đề
         } else if ("title".equalsIgnoreCase(sortBy)) {
             queryString += " ORDER BY b.bookTitle " + ("desc".equalsIgnoreCase(sortOrder) ? "DESC" : "ASC");
         }
@@ -78,6 +80,7 @@ public class BookDAOImpl implements BookDAO{
         System.out.println("Category ID: " + categoryID);
         CategoryDAOlmpl dao = new CategoryDAOlmpl(entityManager);
         CategoryDTO category = dao.find(categoryID);
+        // Tạo truy vấn để lấy tất cả sách thuộc danh mục đã chọn
         List<BookDTO> result =  entityManager.createQuery("SELECT b FROM BookDTO b JOIN FETCH b.bookCategories c WHERE c.catId = :category", BookDTO.class)
                 .setParameter("category", category)
                 .getResultList();
@@ -87,6 +90,7 @@ public class BookDAOImpl implements BookDAO{
 
     @Override
     public List<BookDTO> searchBooks(String searchTerm) {
+        // Xây dựng câu truy vấn để tìm sách dựa trên tiêu đề, tác giả hoặc nhà xuất bản
         String jpql = "FROM BookDTO WHERE " +
                 "LOWER(bookTitle) LIKE :searchTerm OR " +
                 "LOWER(author) LIKE :searchTerm OR " +
@@ -100,6 +104,7 @@ public class BookDAOImpl implements BookDAO{
     @Override
     public List<BookDTO> findBooksByTitleAndAuthorAndPublisher(String bookTitle, String author, String publisher) {
         System.out.println("Searching for book with title: " + bookTitle + ", author: " + author + ", publisher: " + publisher);
+        // Tạo truy vấn JPQL để tìm sách theo tiêu đề, tác giả và nhà xuất bản
         List<BookDTO> result = entityManager.createQuery(
                         "SELECT b FROM BookDTO b WHERE b.bookTitle = :bookTitle AND b.author = :author AND b.publisher = :publisher",
                         BookDTO.class)

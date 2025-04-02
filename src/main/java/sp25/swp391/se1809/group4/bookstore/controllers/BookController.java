@@ -202,6 +202,7 @@ public class BookController {
             @RequestPart(value = "image", required = false) MultipartFile image) {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
+            // Chuyển đổi chuỗi JSON (bookData) thành một đối tượng BookDTO
             BookDTO updatedBook = objectMapper.readValue(bookData, BookDTO.class);
 
             // Lấy sách hiện tại từ database
@@ -281,6 +282,7 @@ public class BookController {
 
     @DeleteMapping("/{bookId}")
     public ResponseEntity<String> deleteBook(@PathVariable int bookId) {
+        //tìm cuốn sách trong cơ sở dữ liệu bằng bookId
         BookDTO book = bookDAO.find(bookId);
         if (book != null) {
             bookDAO.delete(bookId);
