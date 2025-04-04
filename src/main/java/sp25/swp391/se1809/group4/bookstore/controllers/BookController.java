@@ -202,7 +202,10 @@ public class BookController {
             @RequestPart(value = "image", required = false) MultipartFile image) {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
+<<<<<<< HEAD
             // Chuyển đổi chuỗi JSON (bookData) thành một đối tượng BookDTO
+=======
+>>>>>>> d746107 (Update Application and edit AuthenticationController)
             BookDTO updatedBook = objectMapper.readValue(bookData, BookDTO.class);
 
             // Lấy sách hiện tại từ database
@@ -282,7 +285,10 @@ public class BookController {
 
     @DeleteMapping("/{bookId}")
     public ResponseEntity<String> deleteBook(@PathVariable int bookId) {
+<<<<<<< HEAD
         //tìm cuốn sách trong cơ sở dữ liệu bằng bookId
+=======
+>>>>>>> d746107 (Update Application and edit AuthenticationController)
         BookDTO book = bookDAO.find(bookId);
         if (book != null) {
             bookDAO.delete(bookId);

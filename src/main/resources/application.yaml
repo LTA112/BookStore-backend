@@ -1,8 +1,13 @@
 spring:
   datasource:
     url: "jdbc:sqlserver://localhost:1433;databaseName=BookStore;encrypt=true;trustServerCertificate=true;"
+<<<<<<< HEAD
     username: sa
     password: An0354768872
+=======
+    username: Admin
+    password: 112003
+>>>>>>> d746107 (Update Application and edit AuthenticationController)
   application:
     name: BookStore
   main:
