@@ -24,24 +24,27 @@ public class CartDAOImpl implements CartDAO {
     @Override
     @Transactional
     public void addBookToCart(String username, int bookID, int quantity) {
-        // Tìm trong giỏ hàng với username và bookID
-        String jpql = "FROM CartDTO WHERE username.username = :username AND bookID.bookID = :bookID";
-        TypedQuery<CartDTO> query = entityManager.createQuery(jpql, CartDTO.class);
-        query.setParameter("username", username);
-        query.setParameter("bookID", bookID);
+        CartDTO cartItem = null;
 
-        CartDTO cartItem;
+        List<CartDTO> result = entityManager.createQuery(
+                        "SELECT c FROM CartDTO c WHERE c.username.username = :username AND c.bookID.bookID = :bookID",
+                        CartDTO.class
+                )
+                .setParameter("username", username)
+                .setParameter("bookID", bookID)
+                .getResultList();
 
-        if (!query.getResultList().isEmpty()) {
-            // Nếu đã có trong giỏ, cập nhật số lượng
-            cartItem = query.getSingleResult();
-            cartItem.setQuantity(cartItem.getQuantity() + quantity);
+        if (!result.isEmpty()) {
+            cartItem = result.get(0);
+            int currentQty = cartItem.getQuantity();
+            cartItem.setQuantity(currentQty + quantity);
             entityManager.merge(cartItem);
         } else {
-            // Nếu chưa có, thêm mới
+            AccountDTO account = entityManager.find(AccountDTO.class, username);
+            BookDTO book = entityManager.find(BookDTO.class, bookID);
             cartItem = new CartDTO();
-            cartItem.setUsername(entityManager.find(AccountDTO.class, username));
-            cartItem.setBookID(entityManager.find(BookDTO.class, bookID));
+            cartItem.setUsername(account);
+            cartItem.setBookID(book);
             cartItem.setQuantity(quantity);
             entityManager.persist(cartItem);
         }
@@ -49,58 +52,46 @@ public class CartDAOImpl implements CartDAO {
 
     @Override
     public List<CartDTO> viewCart(String username) {
-        String jpql = "SELECT c FROM CartDTO c WHERE c.username.username = :username";
-        TypedQuery<CartDTO> query = entityManager.createQuery(jpql, CartDTO.class);
-        query.setParameter("username", username);
-        List<CartDTO> cartList = query.getResultList();
-
-        // In ra console để kiểm tra
-
-
-        return cartList;
+        return entityManager.createQuery(
+                        "SELECT c FROM CartDTO c WHERE c.username.username = :username",
+                        CartDTO.class
+                )
+                .setParameter("username", username)
+                .getResultList();
     }
-
 
     @Override
     @Transactional
     public void editQuantity(String username, int cartID, int quantity) {
-        String jpql = "FROM CartDTO WHERE username.username = :username AND cartID = :cartID";
-        TypedQuery<CartDTO> query = entityManager.createQuery(jpql, CartDTO.class);
-        query.setParameter("username", username);
-        query.setParameter("cartID", cartID);
+        List<CartDTO> items = entityManager.createQuery(
+                        "SELECT c FROM CartDTO c WHERE c.username.username = :username AND c.cartID = :cartID",
+                        CartDTO.class
+                )
+                .setParameter("username", username)
+                .setParameter("cartID", cartID)
+                .getResultList();
 
-        if (!query.getResultList().isEmpty()) {
-            CartDTO cartItem = query.getSingleResult();
+        if (!items.isEmpty()) {
+            CartDTO cartItem = items.get(0);
             cartItem.setQuantity(quantity);
             entityManager.merge(cartItem);
         } else {
-            throw new RuntimeException("Cart item not found with ID: " + cartID);
+            throw new IllegalArgumentException("Không tìm thấy giỏ hàng có ID: " + cartID);
         }
     }
-
 
     @Override
     @Transactional
     public void deleteBookFromCart(String username, int cartID) {
-        // Logic xóa (sử dụng JPQL hoặc Native Query như trên)
-        String jpql = "DELETE FROM CartDTO c WHERE c.id = :cartID AND c.username.username = :username";
-        int deletedCount = entityManager.createQuery(jpql)
+        int affectedRows = entityManager.createQuery(
+                        "DELETE FROM CartDTO c WHERE c.id = :cartID AND c.username.username = :username"
+                )
                 .setParameter("cartID", cartID)
                 .setParameter("username", username)
                 .executeUpdate();
-        if (deletedCount > 0) {
-            System.out.println("Cart item deleted successfully with cartID: " + cartID);
-        } else {
-            throw new RuntimeException("Cart item not found or username does not match.");
+
+        if (affectedRows == 0) {
+            throw new IllegalStateException("Không thể xóa vì không tìm thấy cartID phù hợp.");
         }
     }
 }
-
-
-
-
-
-
-
-
-
