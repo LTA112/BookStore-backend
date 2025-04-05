@@ -1,6 +1,10 @@
 package sp25.swp391.se1809.group4.bookstore.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import sp25.swp391.se1809.group4.bookstore.daos.AccountDAO;
+import sp25.swp391.se1809.group4.bookstore.daos.StaffDAO;
+import sp25.swp391.se1809.group4.bookstore.models.AccountDTO;
+import sp25.swp391.se1809.group4.bookstore.models.StaffDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -9,30 +13,24 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-import sp25.swp391.se1809.group4.bookstore.daos.AccountDAO;
-import sp25.swp391.se1809.group4.bookstore.daos.StaffDAO;
-import sp25.swp391.se1809.group4.bookstore.models.AccountDTO;
-import sp25.swp391.se1809.group4.bookstore.models.StaffDTO;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
-@Slf4j
+@Slf4j // cho phép sử dụng log.infor
 @RestController
 @RequestMapping("/api/v1/accounts")
 public class AccountController {
+    final int ROLE_ADMIN = 0;
+    final int ROLE_CUSTOMER = 1;
+    final int ROLE_SELLER_STAFF = 2;
+    final int ROLE_WAREHOUSE_STAFF = 3;
+    final String DEFAULT_PASSWORD = "12345";
+    AccountDAO accountDAO;
+    StaffDAO staffDAO;
 
-    private static final int ROLE_ADMIN = 0;
-    private static final int ROLE_CUSTOMER = 1;
-    private static final int ROLE_SELLER_STAFF = 2;
-    private static final int ROLE_WAREHOUSE_STAFF = 3;
-    private static final String DEFAULT_PASSWORD = "12345";
-
-    private final AccountDAO accountDAO;
-    private final StaffDAO staffDAO;
-    private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
+    PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
 
     @Autowired
     public AccountController(AccountDAO accountDAO, StaffDAO staffDAO) {
@@ -40,151 +38,155 @@ public class AccountController {
         this.staffDAO = staffDAO;
     }
 
+
     @PreAuthorize("hasAuthority('SCOPE_ADMIN')")
     @GetMapping("/")
     public List<AccountDTO> getAccounts() {
-        return accountDAO.findAll()
-                .stream()
-                .filter(a -> Optional.ofNullable(a.getAccStatus()).orElse(0) > 0)
-                .collect(Collectors.toList());
+        List<AccountDTO> list = new ArrayList<>();
+        for (AccountDTO accountDTO : accountDAO.findAll()) {
+            if (accountDTO.getAccStatus() != null && accountDTO.getAccStatus() > 0) {
+                list.add(accountDTO);
+            }
+        }
+        return list;
     }
 
     @PreAuthorize("hasAuthority('SCOPE_ADMIN')")
     @GetMapping("/search")
     public List<AccountDTO> searchAccounts(@RequestParam String keyword) {
-        return accountDAO.searchAccounts(keyword)
-                .stream()
-                .filter(a -> Optional.ofNullable(a.getAccStatus()).orElse(0) > 0)
-                .collect(Collectors.toList());
+        List<AccountDTO> list = new ArrayList<>();
+        for (AccountDTO accountDTO : accountDAO.searchAccounts(keyword)) {
+            if (accountDTO.getAccStatus() != null && accountDTO.getAccStatus() > 0) {
+                list.add(accountDTO);
+            }
+        }
+        return list;
     }
 
     @GetMapping("/{username}")
     public ResponseEntity<AccountDTO> getAccount(@PathVariable String username) {
         AccountDTO account = accountDAO.findByUsername(username);
-        if (account == null || Optional.ofNullable(account.getAccStatus()).orElse(0) == 0) {
+        System.out.println(account.getAccStatus());
+        if (account.getAccStatus() != null && account.getAccStatus() != 0) {
+            return ResponseEntity.ok(account);
+        } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
-        return ResponseEntity.ok(account);
     }
-
     @PreAuthorize("hasAuthority('SCOPE_ADMIN')")
-    @PostMapping("/")
+    @PostMapping(value = "/")
     public ResponseEntity<AccountDTO> addAccount(@RequestPart("account") String account) {
         try {
             accountDAO.addAccount(account);
             return ResponseEntity.status(HttpStatus.CREATED).build();
         } catch (Exception e) {
-            log.error("Error adding account", e);
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
-    @PostMapping("/register")
+    @PostMapping(value = "/register")
     public ResponseEntity<AccountDTO> registeredAccount(@RequestPart("register") String account) {
         try {
             accountDAO.registerAccount(account);
             return ResponseEntity.status(HttpStatus.CREATED).build();
         } catch (Exception e) {
-            log.error("Error registering account", e);
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-
+    
     @PutMapping("/{username}")
-    public ResponseEntity<AccountDTO> updateAccount(
-            @PathVariable String username,
-            @RequestPart("account") String accountJson) {
+    public ResponseEntity<AccountDTO> updateAccount(@PathVariable String username, @RequestPart("account") String account) {
         try {
+            int oldRole=0;
             ObjectMapper objectMapper = new ObjectMapper();
-            AccountDTO accountDTO = objectMapper.readValue(accountJson, AccountDTO.class);
+            AccountDTO accountDTO = objectMapper.readValue(account, AccountDTO.class);
 
             AccountDTO existingAccount = accountDAO.findByUsername(username);
             if (existingAccount == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
             }
-
-            int oldRole = existingAccount.getRole();
-            updateAccountDetails(existingAccount, accountDTO);
+            oldRole = existingAccount.getRole();
+            existingAccount.setUsername(accountDTO.getUsername());
+            existingAccount.setFirstName(accountDTO.getFirstName());
+            existingAccount.setLastName(accountDTO.getLastName());
+            if (accountDTO.getRole() != null) {
+                existingAccount.setRole(accountDTO.getRole());
+            }
+            existingAccount.setSex(accountDTO.getSex());
+            existingAccount.setPhone(accountDTO.getPhone());
+            existingAccount.setEmail(accountDTO.getEmail());
+            existingAccount.setAddress(accountDTO.getAddress());
+            existingAccount.setDob(accountDTO.getDob());
+            existingAccount.setAccStatus(1);
             accountDAO.save(existingAccount);
 
-            updateStaffRelation(existingAccount, oldRole);
+            if(existingAccount.getRole()==1 && oldRole!=1){
+                staffDAO.delete(staffDAO.findStaff(username).getStaffID());
+            }
+            if(existingAccount.getRole()!=1 && oldRole==1){
+                StaffDTO staff = new StaffDTO();
+                staff.setUsername(accountDTO);
+                staffDAO.addStaff(staff);
+            }
 
             return ResponseEntity.ok(existingAccount);
+
         } catch (IOException e) {
-            log.error("Error updating account", e);
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
-    private void updateAccountDetails(AccountDTO existing, AccountDTO update) {
-        existing.setUsername(update.getUsername());
-        existing.setFirstName(update.getFirstName());
-        existing.setLastName(update.getLastName());
-        if (update.getRole() != null) existing.setRole(update.getRole());
-        existing.setSex(update.getSex());
-        existing.setPhone(update.getPhone());
-        existing.setEmail(update.getEmail());
-        existing.setAddress(update.getAddress());
-        existing.setDob(update.getDob());
-        existing.setAccStatus(1);
-    }
-
-    private void updateStaffRelation(AccountDTO accountDTO, int oldRole) {
-        if (accountDTO.getRole() == ROLE_CUSTOMER && oldRole != ROLE_CUSTOMER) {
-            StaffDTO staff = staffDAO.findStaff(accountDTO.getUsername());
-            if (staff != null) {
-                staffDAO.delete(staff.getStaffID());
-            }
-        } else if (accountDTO.getRole() != ROLE_CUSTOMER && oldRole == ROLE_CUSTOMER) {
-            StaffDTO newStaff = new StaffDTO();
-            newStaff.setUsername(accountDTO);
-            staffDAO.addStaff(newStaff);
-        }
-    }
 
     @PutMapping("/change")
     public ResponseEntity<AccountDTO> changePassword(@RequestPart("password-request") String passwordRequest) {
-        boolean success = accountDAO.changePassword(passwordRequest);
-        return ResponseEntity.status(success ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR).build();
+
+        if (accountDAO.changePassword(passwordRequest)) {
+            return ResponseEntity.status(HttpStatus.OK).build();
+        }
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
 
     @PreAuthorize("hasAuthority('SCOPE_ADMIN')")
     @DeleteMapping("/{username}")
     public ResponseEntity<String> deleteAccount(@PathVariable String username) {
         AccountDTO account = accountDAO.findByUsername(username);
-        if (account == null) {
+        if (account != null) {
+            if (account.getRole() != 1) {
+                staffDAO.delete(staffDAO.findStaff(username).getStaffID());
+            } else {
+                accountDAO.deleteByUsername(username);
+            }
+            return ResponseEntity.ok("Account deleted successfully!");
+        } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Account not found");
         }
-
-        if (account.getRole() != ROLE_CUSTOMER) {
-            StaffDTO staff = staffDAO.findStaff(username);
-            if (staff != null) staffDAO.delete(staff.getStaffID());
-        }
-        accountDAO.deleteByUsername(username);
-        return ResponseEntity.ok("Account deleted successfully!");
     }
 
     @PostMapping("/email/send/")
     public ResponseEntity<Boolean> sendEmail(@RequestPart("forgot-password") String sendEmailRequest) {
         accountDAO.sendEmail(sendEmailRequest);
-        return ResponseEntity.ok(true);
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     @PostMapping("/password/reset/")
     public ResponseEntity<Boolean> resetPassword(@RequestPart("password") String passwordRequest) {
         accountDAO.setPassword(passwordRequest);
-        return ResponseEntity.ok(true);
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     @PostMapping("/email/verify/")
     public ResponseEntity<Boolean> verifyEmail(@RequestPart("code") String otpCodeRequest) {
         accountDAO.verifyEmail(otpCodeRequest);
-        return ResponseEntity.ok(true);
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     @PostMapping("/account/verify/")
     public ResponseEntity<Boolean> verifyAccount(@RequestPart("code") String otpCodeRequest) {
         accountDAO.verifyAccount(otpCodeRequest);
-        return ResponseEntity.ok(true);
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
+
 }
